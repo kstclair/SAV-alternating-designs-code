@@ -1,0 +1,119 @@
+model{
+# CAR occupancy model with homogeneous detection
+
+p~dunif(0,1)            #p=diver method
+c~dunif(0,1)
+q<-c*p                  #cp=q 
+
+#tau.a0 ~ dgamma(1,1)
+#tau~dgamma(1,1)
+sig2 ~ dgamma(1,1)
+tau <- 1/sig2
+sig2.a0 ~ dgamma(1,1)
+tau.a0 <- 1/sig2.a0
+
+alpha0.mn~dnorm(0,1)
+
+
+for (k in 1:48){
+        weights[k]<-1
+        }
+
+for (j in 1:34){
+		alpha0.error[j] ~ dnorm(0,tau.a0)
+		alpha0[j]<-alpha0.mn + alpha0.error[j]
+ 			propz[j]<-sum(z[j,1:16])/16
+			 m1prop[j]<-(z[j,2]+z[j,4]+z[j,5]+z[j,7]+z[j,10]+z[j,12]+z[j, 13]+z[j,15])/8
+			 m2prop[j]<-(z[j,1]+z[j,3]+z[j,6]+z[j,8]+z[j,9]+z[j,11]+z[j, 14]+z[j,16])/8
+                
+                alpha1[j,1:16]~car.normal(adj[], weights[], num[],tau)
+
+                      z[j,2]~dbern(varphi[j,2])
+                      varphi[j,2]<-exp(alpha0[j]+alpha1[j,2])/(1+exp(alpha0[j]+alpha1[j,2]))
+                      mu[j,2]<-p*z[j,2]
+                      y[j,2]~dbern(mu[j,2])
+
+                      z[j,4]~dbern(varphi[j,4])
+                      varphi[j,4]<-exp(alpha0[j]+alpha1[j,4])/(1+exp(alpha0[j]+alpha1[j,4]))
+                      mu[j,4]<-p*z[j,4]
+                      y[j,4]~dbern(mu[j,4])
+
+                      z[j,5]~dbern(varphi[j,5])
+                      varphi[j,5]<-exp(alpha0[j]+alpha1[j,5])/(1+exp(alpha0[j]+alpha1[j,5]))
+                      mu[j,5]<-p*z[j,5]
+                      y[j,5]~dbern(mu[j,5])
+
+                      z[j,7]~dbern(varphi[j,7])
+                      varphi[j,7]<-exp(alpha0[j]+alpha1[j,7])/(1+exp(alpha0[j]+alpha1[j,7]))
+                      mu[j,7]<-p*z[j,7]
+                      y[j,7]~dbern(mu[j,7])
+
+                      z[j,10]~dbern(varphi[j,10])
+                      varphi[j,10]<-exp(alpha0[j]+alpha1[j,10])/(1+exp(alpha0[j]+alpha1[j,10]))
+                      mu[j,10]<-p*z[j,10]
+                      y[j,10]~dbern(mu[j,10])
+
+                      z[j,12]~dbern(varphi[j,12])
+                      varphi[j,12]<-exp(alpha0[j]+alpha1[j,12])/(1+exp(alpha0[j]+alpha1[j,12]))
+                      mu[j,12]<-p*z[j,12]
+                      y[j,12]~dbern(mu[j,12])
+
+                      z[j,13]~dbern(varphi[j,13])
+                      varphi[j,13]<-exp(alpha0[j]+alpha1[j,13])/(1+exp(alpha0[j]+alpha1[j,13]))
+                      mu[j,13]<-p*z[j,13]
+                      y[j,13]~dbern(mu[j,13])
+
+                      z[j,15]~dbern(varphi[j,15])
+                      varphi[j,15]<-exp(alpha0[j]+alpha1[j,15])/(1+exp(alpha0[j]+alpha1[j,15]))
+                      mu[j,15]<-p*z[j,15]
+                      y[j,15]~dbern(mu[j,15])
+
+
+		 z[j,1]~dbern(varphi[j,1])
+                 varphi[j,1]<-exp(alpha0[j]+alpha1[j,1])/(1+exp(alpha0[j]+alpha1[j,1]))
+                 mu[j,1]<-q*z[j,1]
+                 y[j,1]~dbern(mu[j,1])
+
+		 z[j,3]~dbern(varphi[j,3])
+                 varphi[j,3]<-exp(alpha0[j]+alpha1[j,3])/(1+exp(alpha0[j]+alpha1[j,3]))
+                 mu[j,3]<-q*z[j,3]
+                 y[j,3]~dbern(mu[j,3])
+
+		 z[j,6]~dbern(varphi[j,6])
+                 varphi[j,6]<-exp(alpha0[j]+alpha1[j,6])/(1+exp(alpha0[j]+alpha1[j,6]))
+                 mu[j,6]<-q*z[j,6]
+                 y[j,6]~dbern(mu[j,6])
+
+		 z[j,8]~dbern(varphi[j,8])
+                 varphi[j,8]<-exp(alpha0[j]+alpha1[j,8])/(1+exp(alpha0[j]+alpha1[j,8]))
+                 mu[j,8]<-q*z[j,8]
+                 y[j,8]~dbern(mu[j,8])
+
+		 z[j,9]~dbern(varphi[j,9])
+                 varphi[j,9]<-exp(alpha0[j]+alpha1[j,9])/(1+exp(alpha0[j]+alpha1[j,9]))
+                 mu[j,9]<-q*z[j,9]
+                 y[j,9]~dbern(mu[j,9])
+
+		 z[j,11]~dbern(varphi[j,11])
+                 varphi[j,11]<-exp(alpha0[j]+alpha1[j,11])/(1+exp(alpha0[j]+alpha1[j,11]))
+                 mu[j,11]<-q*z[j,11]
+                 y[j,11]~dbern(mu[j,11])
+
+		 z[j,14]~dbern(varphi[j,14])
+                 varphi[j,14]<-exp(alpha0[j]+alpha1[j,14])/(1+exp(alpha0[j]+alpha1[j,14]))
+                 mu[j,14]<-q*z[j,14]
+                 y[j,14]~dbern(mu[j,14])
+
+		 z[j,16]~dbern(varphi[j,16])
+                 varphi[j,16]<-exp(alpha0[j]+alpha1[j,16])/(1+exp(alpha0[j]+alpha1[j,16]))
+                 mu[j,16]<-q*z[j,16]
+                 y[j,16]~dbern(mu[j,16])
+
+
+
+        }
+
+
+}
+
+

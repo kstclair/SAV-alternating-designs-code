@@ -1,0 +1,191 @@
+---
+title: "Run Models"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE, message = FALSE, warning = FALSE)
+```
+```{r}
+library(R2WinBUGS)
+library(mcmcplots)
+```
+
+You must have WinBUGS installed to fit the models. 
+
+Running the models (example with CDEM only)
+
+## CAR model data
+```{r}
+## CAR number of neighbors
+num <- c(2,3,3,2,3,4,4,3,3,4,4,3,2,3,3,2)
+##  CAR adjacency matrix
+adj <- c(
+  2,5,
+  1,3,6,
+  2,4,7,
+  3,8,
+  1,6,9,
+  2,5,7,10,
+  3,6,8,11,
+  4,7,12,
+  5,10,13,
+  6,9,11,14,
+  7,10,12,15,
+  8,11,16,
+  9,14,
+  10,13,15,
+  11,14,16,
+  12,15
+)
+```
+
+
+## 1) Logit-normal occupancy model with homogeneous detection
+First run ONLY the CDEM data clean up chunk in `DataCleanUp.Rmd`. For other species, run their clean up chunk and revise the code below. 
+```{r}
+simple.data <- list(y = y)
+## This creates the data in list form for Winbugs:
+bugs.data(simple.data, dir = getwd(), data.file = "logit_data_CDEM.txt")
+
+# initialize parameters
+inits <- function(){list(
+  p=runif(1,.2,.8), 
+  c=runif(1,.5,1), 
+  alpha0.mn=rnorm(1,1,1), 
+  sig2.a1=runif(1,.01,3), 
+  sig2.a0=runif(1,0.01,20))}
+
+# run model
+sim_CDEM_1h <- bugs(data="logit_data_CDEM.txt",
+                  inits=inits, 
+                  model.file="model_1a0h.txt", 
+                  parameters=c("c", "p", "q", "alpha0.mn", "sig2.a1", "sig2.a0", "propz", "mu"), 
+                  n.burnin=20000, 
+                  n.thin=9, 
+                  n.chains=3, 
+                  n.iter=50000)  
+```
+
+Check convergence and save results
+```{r}
+sim_CDEM_1h$summary[c("c", "p", "q", "alpha0.mn","sig2.a1","sig2.a0"),]
+denplot(sim_CDEM_1h,c("c", "p", "q", "alpha0.mn","sig2.a1","sig2.a0") )
+traplot(sim_CDEM_1h,c("c", "p", "q", "alpha0.mn","sig2.a1","sig2.a0") )
+
+save(sim_CDEM_1h, file="sim_CDEM_1h")
+```
+
+## 2) CAR occupancy model with homogeneous detection
+
+```{r}
+car.data <- list(y=y,  num=num, adj=adj)
+## This creates the data in list form for Winbugs:
+bugs.data(car.data, dir=getwd(), data.file="car_data_CDEM.txt")
+
+# initialize parameters
+inits <- function(){list(
+  p=runif(1,.2,.8), 
+  c=runif(1,.5,1), 
+  alpha0.mn=rnorm(1,1,1), 
+  sig2=runif(1,.01,6), 
+  sig2.a0=runif(1,0.01,20))}
+bugs.data(inits(),dir=getwd(),data.file="car_data_inits.txt")
+
+# run model
+sim_CDEM_2h <- bugs(
+  data="car_data_CDEM.txt",
+  inits=inits, 
+  model.file="model_2a0h.txt", 
+  parameters=c("c", "p", "q", "alpha0.mn","sig2.a0","sig2","propz","mu"), 
+  n.burnin=20000, 
+  n.thin=9, 
+  n.chains=3, 
+  n.iter=50000)  
+```
+
+Check convergence and save results
+```{r}
+sim_CDEM_2h$summary[c("c", "p", "q", "alpha0.mn","sig2","sig2.a0"),]
+denplot(sim_CDEM_2h,c("c", "p", "q", "alpha0.mn","sig2","sig2.a0") )
+traplot(sim_CDEM_2h,c("c", "p", "q", "alpha0.mn","sig2","sig2.a0") )
+
+save(sim_CDEM_2h, file="sim_CDEM_2h")
+```
+
+## 3) CAR occupancy model with heterogeneous detection
+
+```{r}
+car.data <- list(y=y,  num=num, adj=adj)
+## This creates the data in list form for Winbugs:
+bugs.data(car.data, dir=getwd(), data.file="car_data_CDEM.txt")
+
+# initialize parameters
+inits <- function(){list(
+  p=runif(1,.2,.8), 
+  c=runif(34,.5,1), 
+  alpha0.mn=rnorm(1,1,1), 
+  sig2=runif(1,.01,6), 
+  sig2.a0=runif(1,0.01,20))}
+bugs.data(inits(),dir=getwd(),data.file="car_data_inits.txt")
+
+# run model
+sim_CDEM_3h <- bugs(
+  data="car_data_CDEM.txt",
+  inits=inits, 
+  model.file="model_3a0h.txt", 
+  parameters=c("c", "p", "q", "alpha0.mn","sig2.a0","sig2","propz","mu"), 
+  n.burnin=20000, 
+  n.thin=9, 
+  n.chains=3, 
+  n.iter=50000)  
+```
+
+Check convergence and save results
+```{r}
+sim_CDEM_3h$summary[c( "p",  "alpha0.mn","sig2","sig2.a0"),]
+denplot(sim_CDEM_3h,c("p",  "alpha0.mn","sig2","sig2.a0") )
+denplot(sim_CDEM_3h,c("c", "q"))
+traplot(sim_CDEM_3h,c("p", "alpha0.mn","sig2","sig2.a0") )
+traplot(sim_CDEM_3h,c("c", "q"))
+
+save(sim_CDEM_3h, file="sim_CDEM_3h")
+```
+
+## 4) logit-normal occupancy model with heterogeneous detection
+
+```{r}
+simple.data <- list(y=y)
+# This creates the data in list form for Winbugs:
+bugs.data(simple.data, dir=getwd(), data.file="simple_data_CDEM.txt")
+
+# initialize parameters
+inits <- function(){list(
+  p=runif(34,.2,.8), 
+  c=runif(34,.5,1), 
+  alpha0.mn=rnorm(1,1,1), 
+  sig2.a1=runif(1,.01,3), 
+  sig2.a0=runif(1,0.01,20))}
+
+# run model
+sim_CDEM_4h <- bugs(
+  data="simple_data_CDEM.txt",
+  inits=inits, 
+  model.file="model_4a0h.txt", 
+  parameters=c("c", "p", "q", "alpha0.mn","sig2.a1","sig2.a0","propz","mu"), 
+  n.burnin=20000, 
+  n.thin=9, 
+  n.chains=3, 
+  n.iter=50000)  
+```
+
+Check convergence and save results
+```{r}
+sim_CDEM_4h$summary[c( "p",  "alpha0.mn","sig2.a1","sig2.a0"),]
+denplot(sim_CDEM_4h,c("p",  "alpha0.mn","sig2.a1","sig2.a0") )
+denplot(sim_CDEM_4h,c("c", "q"))
+traplot(sim_CDEM_4h,c("p", "alpha0.mn","sig2.a1","sig2.a0") )
+traplot(sim_CDEM_4h,c("c", "q"))
+
+save(sim_CDEM_4h, file="sim_CDEM_4h")
+```
